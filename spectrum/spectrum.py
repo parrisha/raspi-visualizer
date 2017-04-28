@@ -3,10 +3,9 @@
 # Aaron Joe Parrish - Spring 2017
 #
 # Final Project
-#  SpectrumTester.py
-#  Uses the same FFT algorithm used on the PI
-#  and graphs the result using MatPlotLib instead of on LEDs
-#  Test vectors are generated at specific frequencies using numpy
+#  spectrum.py
+#  Implements a numpy FFT in Python 3.4
+#  and scales the results to fit on an LED array
 ####################
 import numpy as np
 
