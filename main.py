@@ -5,22 +5,28 @@ from struct import unpack
 import time
 
 from spectrum import spectrum
-
+from led import Matrix16x8
 
 #Will only be executed if this file is called directly from python
 if __name__ == '__main__':
    chunk = 4096
-   wavfile = wave.open('/home/pi/ECE_612/samples/glass_animals.wav')
 
+   #Setup for reading from a .wav file on disk
+   wavfile = wave.open('/home/pi/ECE_612/samples/glass_animals.wav')
    sample_rate = wavfile.getframerate()
    print("Input File Sample Rate ", sample_rate)
-
    output = aa.PCM(aa.PCM_PLAYBACK, aa.PCM_NORMAL)
    output.setchannels(1)
    output.setperiodsize(chunk)
 
-   bin_mapping = find_bin_mapping_np(16, chunk, sample_rate)
-   bin_weights = find_bin_weights_np(16, chunk)
+   #Setup the LED display for writing outputs
+   display = Matrix16x8.Matrix16x8()
+   display.begin()
+   display.clear()
+   display.set_brightness(1)
+   display.write_display()
+
+   bin_mapping = spectrum.find_bin_mapping_np(16, chunk, sample_rate)
    #Selected Bin Mapping:  [2, 3, 4, 7, 10, 16, 25, 38, 59, 90, 139, 215, 330, 509, 783, 1206, 1858]
    print("Selected Bin Mapping: ", bin_mapping)
 
@@ -33,11 +39,9 @@ if __name__ == '__main__':
       data = unpack("%dh"%(len(data)/2),data)
       data = np.array(data, dtype='h')
 
-      bin_powers = get_spectrum(data, bin_mapping, chunk, sample_rate)
-      # Bin powers are very large numbers!  Need to scale down to fit on the 8-height array
-      bin_powers = np.divide(bin_powers,1000000000)
-      bin_powers = np.round(bin_powers)
+      bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, sample_rate)
       print(bin_powers)
+      for col in range(0,8):
+         display.set_column(col, bin_powers[col])
       data = wavfile.readframes(chunk)
       time.sleep(1)
-
