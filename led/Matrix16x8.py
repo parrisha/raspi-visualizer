@@ -22,7 +22,7 @@
 # THE SOFTWARE.
 from . import HT16K33
 
-class Matrix16X8(HT16K33.HT16K33):
+class Matrix16x8(HT16K33.HT16K33):
     """Single color 8x16 matrix LED backpack display."""
 
     #Initialize display.  All arguments will be passed to the HT16K33 class
