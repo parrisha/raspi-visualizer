@@ -36,10 +36,12 @@ class Matrix16x8(HT16K33.HT16K33):
             # Ignore out of bounds pixels.
             return
         
-        #Remap the rows and columns when passing into HT16K33
+        #Remap x and y into one of the 128 possible LEDs when passing into HT16K33
         #to make the Bottom-Left corner of LED Array be (0, 0) and increase up and to the right
-        #    See LED_mapping.xlsx
-        led = (7 - x//2 + x%2*8)*8 + (7 - y)
+        #    See LED_mapping.xlsx for formula and mapping
+        row = (7 - x) * 2
+        if (x >= 8): row += 17
+        led = (row)*8 + (7 - y)
         self.set_led(led, value)
 
     # JParrish 4/29/2017
@@ -47,7 +49,9 @@ class Matrix16x8(HT16K33.HT16K33):
     #  But with the LED Arrays wired "backwards" (column drivers connected to LED row pins)
     #  Setting a row register is equivalent to lighting up a column
     def set_column(self, x, height):
-        #Remap the column ID when passing into HT16K33 to make leftmost column 0 and increase to the right
+        #Remap the column to the correct row when passing into HT16K33 to make leftmost column 0 and increase to the right
         #We also want to light "up" from the end of the column, so generate Height number of 1's and then invert
         value = 256 - (2 ** (8 - height))
-        self.set_row_reg(7 - x//2 + x%2*8, value)
+        row = (7 - x) * 2
+        if (x >= 8): row += 17
+        self.set_row_reg(row, value)
