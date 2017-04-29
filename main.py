@@ -41,7 +41,7 @@ if __name__ == '__main__':
 
       # Optional scale factor is applied to output of FFT
       #  4 is default for full scale 16-bit audio, increase if volume is really low
-      bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, sample_rate, scale=9)
+      bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, scale=9)
       print(bin_powers)
       for col in range(0,8):
          display.set_column(col, bin_powers[col])
