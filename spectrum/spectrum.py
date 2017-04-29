@@ -51,8 +51,14 @@ def find_bin_mapping_np(num_columns, chunk=4096, samplerate=44100):
     #So now, each column will average the FFT bins between each pair of indexes in bin_mapping
     return bin_mapping
     
-
-def get_spectrum(data, bin_mapping, chunk):
+# Data: Should be a chunk-length array of real samples to compute spectral data for
+# bin_mapping: An array of bin indexes.  This function will scale and then sum the FFT output
+#              between each bin_index and append to the output array
+# chunk: Size of the FFT and the number of values in data
+# scale: Optional argument with a default of 4.  Scales fft output by powers of 2
+#        If set to 4 and the input is full scale 16-bit audio, should produce values between 0 and 8
+#        Increase this parameter for audio data with low volume, or decrease to drive more than 8 LEDs per column
+def get_spectrum(data, bin_mapping, chunk, scale=4):
    #Use the rfft function which only computes half of the FFT
    # Since our input is all real data, only the one half is useful
    y_fft = np.fft.rfft(data)
@@ -65,9 +71,9 @@ def get_spectrum(data, bin_mapping, chunk):
    # Dividing by (2^15 * chunk) would scale to between 0 and 1
    # But we want to drive LEDs of height 8, so don't divide by quite as much
    # Use right_shift to perform a faster divide-by-power-of-two
-   y_shift = np.right_shift(y_amp, int(np.log2(chunk) + 15 - 4))
+   y_shift = np.right_shift(y_amp, int(np.log2(chunk) + 15 - scale))
 
-   bin_amplitudes = np.array([])
+   bin_amplitudes = np.array([], dtype='i2')
    #Iterate through every item pair in bin_mapping using zip
    # Returns one item from each range on each iteration
    #  bin_mapping[:-1] iterates from beginning to last-1 item
