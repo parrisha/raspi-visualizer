@@ -49,5 +49,5 @@ class Matrix16x8(HT16K33.HT16K33):
     def set_column(self, x, height):
         #Remap the column ID when passing into HT16K33 to make leftmost column 0 and increase to the right
         #We also want to light "up" from the end of the column, so generate Height number of 1's and then invert
-        value = ~((2 ** (8 - height)) - 1)
+        value = 256 - (2 ** (8 - height))
         self.set_row_reg(self, (7 - x) % 16, value)
