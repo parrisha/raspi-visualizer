@@ -39,9 +39,12 @@ if __name__ == '__main__':
       data = unpack("%dh"%(len(data)/2),data)
       data = np.array(data, dtype='h')
 
-      bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, sample_rate)
+      # Optional scale factor is applied to output of FFT
+      #  4 is default for full scale 16-bit audio, increase if volume is really low
+      bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, sample_rate, scale=9)
       print(bin_powers)
       for col in range(0,8):
          display.set_column(col, bin_powers[col])
+      display.write_display()
       data = wavfile.readframes(chunk)
       time.sleep(1)
