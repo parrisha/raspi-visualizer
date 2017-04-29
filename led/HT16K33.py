@@ -90,14 +90,11 @@ class HT16K33(object):
             # Turn on the specified LED (set bit to one).
             self.buffer[pos] |= (1 << offset)
 
-    def set_row(self, index, value):
-        """Sets value number of LEDs in a single row to True
-           Directly accesses HT16K33 bytearray for faster processing
-        """
-        if (value == 0):
-            self.buffer[index] = 0
-        else:
-            self.buffer[index] = (2 ** value) - 1
+    # JParrish 4/29/2017
+    # Sets num LEDs in a single row register to value.  Starts at column 0 of the row
+    # Directly access HT16K33 bytearray for faster processing
+    def set_row_reg(self, index, value):     
+        self.buffer[index] = value
 
     def write_display(self):
         """Write display buffer to display hardware."""
