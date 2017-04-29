@@ -25,28 +25,29 @@ from . import HT16K33
 class Matrix16X8(HT16K33.HT16K33):
     """Single color 8x16 matrix LED backpack display."""
 
+    #Initialize display.  All arguments will be passed to the HT16K33 class
+    # initializer, including optional I2C address and bus number parameters.
     def __init__(self, **kwargs):
-        """Initialize display.  All arguments will be passed to the HT16K33 class
-        initializer, including optional I2C address and bus number parameters.
-        """
         super(Matrix16x8, self).__init__(**kwargs)
 
+    #Set pixel at position x, y to the given value (0 for off, 1 for on)
     def set_pixel(self, x, y, value):
-        """Set pixel at position x, y to the given value.  X and Y should be values
-        of 0 to 7 and 0 to 15, resp.  Value should be 0 for off and non-zero for on.
-        """
         if x < 0 or x > 15 or y < 0 or y > 7:
             # Ignore out of bounds pixels.
             return
-        """ Remap the LEDS to make the Bottom-Left corner be (0, 0) and move up and right
-            See LED_mapping.xlsx
-        """
+        
+        #Remap the rows and columns when passing into HT16K33
+        #to make the Bottom-Left corner of LED Array be (0, 0) and increase up and right
+        #    See LED_mapping.xlsx
         led = ((15 - x) * 8 + (7 - y) - 64) % 128
         self.set_led(led, value)
 
-    def set_column(self, x, value):
-        """Since the HT16K33 is internally organized as one register per 8 LEDs
-        provide a method to quickly set an entire register.
-        Will set a column to have $value number of lit LEDs
-        """
-        self.set_register(self, x, value)
+    # JParrish 4/29/2017
+    # Write an entire register in the HT16K33, which would normally light up a row
+    #  But with the LED Arrays wired "backwards" (column drivers connected to LED row pins)
+    #  Setting a row register is equivalent to lighting up a column
+    def set_column(self, x, height):
+        #Remap the column ID when passing into HT16K33 to make leftmost column 0 and increase to the right
+        #We also want to light "up" from the end of the column, so generate Height number of 1's and then invert
+        value = ~((2 ** (8 - height)) - 1)
+        self.set_row_reg(self, (7 - x) % 16, value)
