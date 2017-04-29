@@ -37,9 +37,9 @@ class Matrix16x8(HT16K33.HT16K33):
             return
         
         #Remap the rows and columns when passing into HT16K33
-        #to make the Bottom-Left corner of LED Array be (0, 0) and increase up and right
+        #to make the Bottom-Left corner of LED Array be (0, 0) and increase up and to the right
         #    See LED_mapping.xlsx
-        led = ((15 - x) * 8 + (7 - y) - 64) % 128
+        led = (7 - x//2 + x%2*8)*8 + (7 - y)
         self.set_led(led, value)
 
     # JParrish 4/29/2017
@@ -50,4 +50,4 @@ class Matrix16x8(HT16K33.HT16K33):
         #Remap the column ID when passing into HT16K33 to make leftmost column 0 and increase to the right
         #We also want to light "up" from the end of the column, so generate Height number of 1's and then invert
         value = 256 - (2 ** (8 - height))
-        self.set_row_reg((7 - x) % 16, value)
+        self.set_row_reg(7 - x//2 + x%2*8, value)
