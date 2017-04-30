@@ -13,6 +13,7 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser(description='Read samples from a .wav file and display Audio spectrum on LEDs')
    parser.add_argument('wavfile', type=argparse.FileType('rb'))
    parser.add_argument('--scale', type=int, default=4)
+   parser.add_argument('--use_mic', action='store_true')
    args = parser.parse_args()
 
    chunk = 4096
@@ -22,7 +23,8 @@ if __name__ == '__main__':
    wavfile = wave.open(args.wavfile)
    sample_rate = wavfile.getframerate()
    print("Input File Sample Rate ", sample_rate)
-   output = aa.PCM(aa.PCM_PLAYBACK, aa.PCM_NORMAL)
+   #Also setup to play the .wav file through the Raspberry pi audio output
+   output = aa.PCM(aa.PCM_PLAYBACK, aa.PCM_NONBLOCK)
    output.setchannels(1)
    output.setperiodsize(chunk)
 
@@ -41,6 +43,8 @@ if __name__ == '__main__':
 
    # Loop through the wave file
    while data != '':
+      # Before processing samples in FFT, write raw data to speakers
+      output.write(data)
       # Replace the %d in the format string with length of data chunk.
       #  Will not error if fewer than chunk samples are read at end of file
       data = unpack("%dh"%(len(data)/2),data)
@@ -50,8 +54,9 @@ if __name__ == '__main__':
       #  4 is default for full scale 16-bit audio, increase if volume is really low
       bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, args.scale)
       print(bin_powers)
+      np.clip(bin_powers,0,8,bin_powers)
       for col in range(0,num_columns):
          display.set_column(col, bin_powers[col])
       display.write_display()
       data = wavfile.readframes(chunk)
-      time.sleep(1)
+      time.sleep(chunk/sample_rate)
