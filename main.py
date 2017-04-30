@@ -19,14 +19,25 @@ if __name__ == '__main__':
    chunk = 4096
    num_columns = 16
 
-   #Setup for reading from a .wav file on disk
-   wavfile = wave.open(args.wavfile)
-   sample_rate = wavfile.getframerate()
-   print("Input File Sample Rate ", sample_rate)
-   #Also setup to play the .wav file through the Raspberry pi audio output
-   output = aa.PCM(aa.PCM_PLAYBACK, aa.PCM_NONBLOCK)
-   output.setchannels(1)
-   output.setperiodsize(chunk)
+   if (args.use_mic == True):
+      #Setup an AlsaAudio stream to read data from microphone
+      # Already configured using alsamixer and alsarecord
+      input = aa.PCM(aa.PCM_CAPTURE, aa.PCM_NONBLOCK, cardindex=1)
+      input.setchannels(1)
+      input.setrate(44100)
+      input.setformat(aa.PCM_FORMAT_S16_LE)
+      input.setperiodsize(chunk)
+      read_data_func = input.read
+   else:
+      #Setup for reading from a .wav file on disk
+      input = wave.open(args.wavfile)
+      read_data_func = input.readframes(chunk)
+      sample_rate = wavfile.getframerate()
+      print("Input File Sample Rate ", sample_rate)
+      #Also setup to play the .wav file through the Raspberry pi audio output
+      output = aa.PCM(aa.PCM_PLAYBACK, aa.PCM_NONBLOCK)
+      output.setchannels(1)
+      output.setperiodsize(chunk)
 
    #Setup the LED display for writing outputs
    display = Matrix16x8.Matrix16x8()
@@ -39,7 +50,7 @@ if __name__ == '__main__':
    #Selected Bin Mapping:  [2, 3, 4, 7, 10, 16, 25, 38, 59, 90, 139, 215, 330, 509, 783, 1206, 1858]
    print("Selected Bin Mapping: ", bin_mapping)
 
-   data = wavfile.readframes(chunk)
+   data = read_data_func()
 
    # Loop through the wave file
    while data != '':
@@ -58,5 +69,5 @@ if __name__ == '__main__':
       for col in range(0,num_columns):
          display.set_column(col, bin_powers[col])
       display.write_display()
-      data = wavfile.readframes(chunk)
+      data = read_data_func()
       time.sleep(chunk/sample_rate)
