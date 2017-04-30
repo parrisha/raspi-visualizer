@@ -36,7 +36,7 @@ if __name__ == '__main__':
       #The alsaaudio input object returns two values in NON_BLOCKING_MODE
       # Use a lambda function to coerce the wave readframes() function to return the same type
       read_data_func = lambda x,y: {1, x.readframes(y)}
-      sample_rate = wavfile.getframerate()
+      sample_rate = input.getframerate()
       print("Input File Sample Rate ", sample_rate)
       #Also setup to play the .wav file through the Raspberry pi audio output
       output = aa.PCM(aa.PCM_PLAYBACK, aa.PCM_NONBLOCK)
