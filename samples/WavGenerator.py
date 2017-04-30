@@ -7,16 +7,17 @@
 #############
 
 import wave
+import argparse
 import numpy as np
 
 def generate_sample_file(test_freqs, test_amps, chunk=4096, samplerate=44100):
-
-   filename = 'Sample_'
+   
+   filename = 'Sample'
 
    x = np.arange(chunk)
    y = np.zeros(chunk)
    for test_freq,test_amp in zip(test_freqs,test_amps):
-      filename += str(test_freq) + 'Hz@' + str(test_amp)
+      filename += '_' + str(test_freq) + 'Hz@' + str(test_amp)
       y = np.add(y, np.sin(2 * np.pi * test_freq * x / samplerate) * test_amp)
 
    filename += '.wav'
@@ -30,3 +31,12 @@ def generate_sample_file(test_freqs, test_amps, chunk=4096, samplerate=44100):
 
    for x in range(0,8):
       wave_writer.writeframes(y)
+                       
+if __name__ == '__main__':
+   parser = argparse.ArgumentParser(description='Write a wave file containing Numpy generated sine waves')
+   parser.add_argument('--freqs', nargs='+', type=int)
+   parser.add_argument('--amps', nargs='+', type=int)
+   args = parser.parse_args()
+   
+   generate_sample_file(args.freqs, args.amps)
+   
