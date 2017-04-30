@@ -13,7 +13,7 @@ if __name__ == '__main__':
    parser = argparse.ArgumentParser(description='Read samples from a .wav file and display Audio spectrum on LEDs')
    parser.add_argument('wavfile', type=argparse.FileType('r'))
    args = parser.parse_args()
-   
+
    chunk = 4096
    num_columns = 16
 
