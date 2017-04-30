@@ -74,5 +74,5 @@ if __name__ == '__main__':
       for col in range(0,num_columns):
          display.set_column(col, bin_powers[col])
       display.write_display()
-      data = read_data_func()
+      l, data = read_data_func(input, chunk)
       time.sleep(chunk/sample_rate)
