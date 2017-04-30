@@ -3,17 +3,22 @@ import wave
 import numpy as np
 from struct import unpack
 import time
+import argparse
 
 from spectrum import spectrum
 from led import Matrix16x8
 
 #Will only be executed if this file is called directly from python
 if __name__ == '__main__':
+   parser = argparse.ArgumentParser(description='Read samples from a .wav file and display Audio spectrum on LEDs')
+   parser.add_argument('wavfile', type=argparse.FileType('r'))
+   args = parser.parse_args()
+   
    chunk = 4096
    num_columns = 16
 
    #Setup for reading from a .wav file on disk
-   wavfile = wave.open('/home/pi/ECE_612/samples/glass_animals.wav')
+   wavfile = wave.open(args.wavfile)
    sample_rate = wavfile.getframerate()
    print("Input File Sample Rate ", sample_rate)
    output = aa.PCM(aa.PCM_PLAYBACK, aa.PCM_NORMAL)
