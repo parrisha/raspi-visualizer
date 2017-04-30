@@ -27,11 +27,15 @@ if __name__ == '__main__':
       input.setrate(44100)
       input.setformat(aa.PCM_FORMAT_S16_LE)
       input.setperiodsize(chunk)
-      read_data_func = input.read
+      #Needed to use a lambda for wave readframes() (see below)
+      # So also use one here so the calls will have the same syntax
+      read_data_func = lambda x,y: x.read()
    else:
       #Setup for reading from a .wav file on disk
       input = wave.open(args.wavfile)
-      read_data_func = input.readframes(chunk)
+      #The alsaaudio input object returns two values in NON_BLOCKING_MODE
+      # Use a lambda function to coerce the wave readframes() function to return the same type
+      read_data_func = lambda x,y: {1, x.readframes(y)}
       sample_rate = wavfile.getframerate()
       print("Input File Sample Rate ", sample_rate)
       #Also setup to play the .wav file through the Raspberry pi audio output
@@ -50,7 +54,8 @@ if __name__ == '__main__':
    #Selected Bin Mapping:  [2, 3, 4, 7, 10, 16, 25, 38, 59, 90, 139, 215, 330, 509, 783, 1206, 1858]
    print("Selected Bin Mapping: ", bin_mapping)
 
-   data = read_data_func()
+   #Call the function pointer that will either read from mic or file on disk
+   l, data = read_data_func(input, chunk)
 
    # Loop through the wave file
    while data != '':
