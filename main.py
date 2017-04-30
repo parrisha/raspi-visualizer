@@ -11,7 +11,8 @@ from led import Matrix16x8
 #Will only be executed if this file is called directly from python
 if __name__ == '__main__':
    parser = argparse.ArgumentParser(description='Read samples from a .wav file and display Audio spectrum on LEDs')
-   parser.add_argument('wavfile', type=argparse.FileType('r'))
+   parser.add_argument('wavfile', type=argparse.FileType('rb'))
+   parser.add_argument('--scale', type=int, default=4)
    args = parser.parse_args()
 
    chunk = 4096
@@ -47,7 +48,7 @@ if __name__ == '__main__':
 
       # Optional scale factor is applied to output of FFT
       #  4 is default for full scale 16-bit audio, increase if volume is really low
-      bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, scale=10)
+      bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, args.scale)
       print(bin_powers)
       for col in range(0,num_columns):
          display.set_column(col, bin_powers[col])
