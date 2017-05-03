@@ -47,10 +47,10 @@ def find_bin_mapping_np(num_columns, chunk=4096, samplerate=44100):
     #Only the first half of the bins contain useful information and each bin has width of
     # (sampling_rate / chunk)
     bin_mapping = [int(round(x / (samplerate / chunk))) for x in bin_mapping]
-
-    #So now, each column will average the FFT bins between each pair of indexes in bin_mapping
-    return bin_mapping
     
+     #So now, each column will average the FFT bins between each pair of indexes in bin_mapping
+    return bin_mapping
+
 # Data: Should be a chunk-length array of real samples to compute spectral data for
 # bin_mapping: An array of bin indexes.  This function will scale and then sum the FFT output
 #              between each bin_index and append to the output array
@@ -66,7 +66,7 @@ def get_spectrum(data, bin_mapping, chunk, scale=4):
    # Use abs() to get magnitude and then cast to int
    # Eventually mapping to just 8 LEDs, so okay to cast now and lose precision
    y_amp = (np.abs(y_fft)).astype(int)
-   
+
    #After the FFT, the amplitudes are large.  On the order of 2^15 (Max input from Mic) * chunk
    # Dividing by (2^15 * chunk) would scale to between 0 and 1
    # But we want to drive LEDs of height 8, so don't divide by quite as much
