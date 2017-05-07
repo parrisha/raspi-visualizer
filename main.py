@@ -6,17 +6,20 @@ import time
 import argparse
 
 from spectrum import spectrum
+from mic import mic
 from led import Matrix16x8
 
 #Will only be executed if this file is called directly from python
 if __name__ == '__main__':
    parser = argparse.ArgumentParser(description='Read samples from a .wav file and display Audio spectrum on LEDs')
-   parser.add_argument('wavfile', type=argparse.FileType('rb'))
+   parser.add_argument('--wavfile', type=argparse.FileType('rb'))
    parser.add_argument('--scale', type=int, default=4)
    parser.add_argument('--use_mic', action='store_true')
+   parser.add_argument('--max_freq', type=int, default=20000)
+   parser.add_argument('--min_freq', type=int, default=20)
    args = parser.parse_args()
 
-   chunk = 4096
+   chunk = 8192
    num_columns = 16
 
    if (args.use_mic == True):
@@ -24,12 +27,14 @@ if __name__ == '__main__':
       # Already configured using alsamixer and alsarecord
       input = aa.PCM(aa.PCM_CAPTURE, aa.PCM_NONBLOCK, cardindex=1)
       input.setchannels(1)
-      input.setrate(44100)
+      sample_rate = 44100
+      input.setrate(sample_rate)
       input.setformat(aa.PCM_FORMAT_S16_LE)
-      input.setperiodsize(chunk)
+      input.setperiodsize(chunk//8)
       #Needed to use a lambda for wave readframes() (see below)
       # So also use one here so the calls will have the same syntax
-      read_data_func = lambda x,y: x.read()
+      #read_data_func = lambda x,y: x.read()
+      read_data_func = lambda x,y: mic.read_mic(y, x)
    else:
       #Setup for reading from a .wav file on disk
       input = wave.open(args.wavfile)
@@ -50,29 +55,33 @@ if __name__ == '__main__':
    display.set_brightness(1)
    display.write_display()
 
-   bin_mapping = spectrum.find_bin_mapping_np(num_columns, chunk, sample_rate)
+   bin_mapping = spectrum.find_bin_mapping_np(num_columns, args.min_freq, args.max_freq, chunk, sample_rate)
    #Selected Bin Mapping:  [2, 3, 4, 7, 10, 16, 25, 38, 59, 90, 139, 215, 330, 509, 783, 1206, 1858]
    print("Selected Bin Mapping: ", bin_mapping)
 
-   #Call the function pointer that will either read from mic or file on disk
-   l, data = read_data_func(input, chunk)
+   # Create a numpy array that will store a timeseries of FFT outputs
 
-   # Loop through the wave file
-   while data != '':
+   # Loop through the wave file or mic input
+   loop = 1
+   while loop == 1:
+      #Call the function pointer that will either read from mic or file on disk
+      data = read_data_func(input, chunk)
+      # At the end of a .wav file, data will be '', so break out of the processing loop
+      if (data == ''): break
       # Before processing samples in FFT, write raw data to speakers
-      output.write(data)
+      # output.write(data)
       # Replace the %d in the format string with length of data chunk.
       #  Will not error if fewer than chunk samples are read at end of file
-      data = unpack("%dh"%(len(data)/2),data)
-      data = np.array(data, dtype='h')
+      #data = unpack("%dh"%(len(data)/2),data)
+      #data = np.array(data, dtype='h')
 
       # Optional scale factor is applied to output of FFT
-      #  4 is default for full scale 16-bit audio, increase if volume is really low
+      #  4 is default for full scale 16-bit audio, increase if volume is low
       bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, args.scale)
-      print(bin_powers)
+      #print(bin_powers)
       np.clip(bin_powers,0,8,bin_powers)
+      # Average the bin_powers over time so the LEDs change more slowly
+      
       for col in range(0,num_columns):
          display.set_column(col, bin_powers[col])
       display.write_display()
-      l, data = read_data_func(input, chunk)
-      time.sleep(chunk/sample_rate)
