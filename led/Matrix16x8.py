@@ -55,3 +55,11 @@ class Matrix16x8(HT16K33.HT16K33):
         row = (7 - x) * 2
         if (x >= 8): row += 17
         self.set_row_reg(row, value)
+        
+    def write_hi(self):
+        x_pixels = [ 1, 1, 1, 1, 1, 1, 1, 2, 3, 4, 5, 5, 5, 5, 5, 5, 5, 9, 9, 10, 10, 11, 11, 11, 11, 11, 11, 11, 12, 12, 13, 13]
+        y_pixels = [ 1, 2, 3, 4, 5, 6, 7, 4, 4, 4, 1, 2, 3, 4, 5, 6, 7, 1, 7,  1,  7,  1,  2,  3,  4,  5,  6,  7,  1,  7,  1,  7]
+        
+        for x,y in zip(x_pixels, y_pixels):
+            self.set_pixel(x, y, 1)
+        
