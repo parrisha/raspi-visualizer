@@ -41,12 +41,14 @@ def find_bin_mapping_np(num_columns, min_freq, max_freq, chunk=4096, samplerate=
         num_cols_mapped = num_cols_mapped * 2
     #Done mapping, but the bin_mapping list is still in log form
     #Use NumPy power() to convert back to frequency in Hz
-    bin_mapping = np.power(10, bin_mapping)
+    bin_freqs = np.power(10, bin_mapping)
 
     #Based on the number of points in our FFT, find the closest bin index to each frequency entry
     #Only the first half of the bins contain useful information and each bin has width of
     # (sampling_rate / chunk)
-    bin_mapping = [int(round(x / (samplerate / chunk))) for x in bin_mapping]
+    bin_mapping = [int(round(x / (samplerate / chunk))) for x in bin_freqs]
+    print("Selected Bin Mapping: ", bin_mapping)
+    print("Selected Bin Freqs: ", bin_freqs)
 
     #So now, each column will average the FFT bins between each pair of indexes in bin_mapping
     return bin_mapping
@@ -83,5 +85,9 @@ def get_spectrum(data, bin_mapping, chunk, scale=4):
       # Python [x:y] indexing does not include the y-th item
       amplitude = (np.sum(y_shift[x:y]))
       bin_amplitudes = np.append(bin_amplitudes, amplitude)
+
+   # Loudness is logarithmic, so take the log2 of the bin powers
+   bin_amplitudes = np.add(bin_amplitudes, np.ones(len(bin_amplitudes), int))
+   bin_amplitudes = np.log2(bin_amplitudes).astype(int)
 
    return bin_amplitudes

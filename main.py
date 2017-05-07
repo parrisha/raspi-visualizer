@@ -15,12 +15,27 @@ if __name__ == '__main__':
    parser.add_argument('--wavfile', type=argparse.FileType('rb'))
    parser.add_argument('--scale', type=int, default=4)
    parser.add_argument('--use_mic', action='store_true')
+   parser.add_argument('--show_hi', action='store_true')
    parser.add_argument('--max_freq', type=int, default=20000)
    parser.add_argument('--min_freq', type=int, default=20)
    args = parser.parse_args()
 
    chunk = 8192
    num_columns = 16
+
+   #Setup the LED display for writing outputs
+   display = Matrix16x8.Matrix16x8()
+   display.begin()
+   display.clear()
+   display.set_brightness(1)
+   display.write_display()
+
+   if (args.show_hi == True):
+      display.write_hi()
+      display.write_display()
+      time.sleep(15)
+      display.clear()
+      display.write_display()   
 
    if (args.use_mic == True):
       #Setup an AlsaAudio stream to read data from microphone
@@ -48,16 +63,8 @@ if __name__ == '__main__':
       output.setchannels(1)
       output.setperiodsize(chunk)
 
-   #Setup the LED display for writing outputs
-   display = Matrix16x8.Matrix16x8()
-   display.begin()
-   display.clear()
-   display.set_brightness(1)
-   display.write_display()
 
    bin_mapping = spectrum.find_bin_mapping_np(num_columns, args.min_freq, args.max_freq, chunk, sample_rate)
-   #Selected Bin Mapping:  [2, 3, 4, 7, 10, 16, 25, 38, 59, 90, 139, 215, 330, 509, 783, 1206, 1858]
-   print("Selected Bin Mapping: ", bin_mapping)
 
    # Create a numpy array that will store a timeseries of FFT outputs
 
@@ -67,7 +74,7 @@ if __name__ == '__main__':
       #Call the function pointer that will either read from mic or file on disk
       data = read_data_func(input, chunk)
       # At the end of a .wav file, data will be '', so break out of the processing loop
-      if (data == ''): break
+      if (len(data) == 0): break
       # Before processing samples in FFT, write raw data to speakers
       # output.write(data)
       # Replace the %d in the format string with length of data chunk.
