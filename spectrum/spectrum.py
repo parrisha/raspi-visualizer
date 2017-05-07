@@ -16,7 +16,7 @@ import numpy as np
 #
 # Use this function to precompute the bin mapping and save the results outside
 # of the main audio processing loop.
-def find_bin_mapping_np(num_columns, chunk=4096, samplerate=44100):
+def find_bin_mapping_np(num_columns, min_freq, max_freq, chunk=4096, samplerate=44100):
 
     #Need to group and assign output bins of the FFT to each column
     #Since sound is logarithmic, we will assign equal amounts of log(spectrum)
@@ -24,7 +24,7 @@ def find_bin_mapping_np(num_columns, chunk=4096, samplerate=44100):
 
     #Audible frequency range is 20Hz - 20KHz
     #If we only had one column, it would cover the entire range
-    bin_mapping = np.array([20, 20000])
+    bin_mapping = np.array([min_freq, max_freq])
     num_cols_mapped = 1
 
     #First, take the log of each entry
@@ -85,3 +85,4 @@ def get_spectrum(data, bin_mapping, chunk, scale=4):
       bin_amplitudes = np.append(bin_amplitudes, amplitude)
 
    return bin_amplitudes
+
