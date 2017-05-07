@@ -85,4 +85,3 @@ def get_spectrum(data, bin_mapping, chunk, scale=4):
       bin_amplitudes = np.append(bin_amplitudes, amplitude)
 
    return bin_amplitudes
-
