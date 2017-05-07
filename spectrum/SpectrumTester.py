@@ -9,6 +9,7 @@
 #  The Raspberry PI does not have MatPlotLib or a display, so only intended to run on a test machine
 ####################
 import matplotlib.pyplot as plt
+import numpy as np
 import time
 from . import spectrum
 
@@ -23,7 +24,7 @@ from . import spectrum
 # test_amps:  An array of integers representing at what amplitude to generate each sine wave from test_freqs
 # chunk:      The data length and FFT size, defaults to 4096
 # samplerate: Samplerate used to generate sine waves.  Defaults to rate of audio CDs, 44.1 KHz
-def spectrum_test(test_freqs, test_amps, chunk=4096, samplerate=44100):
+def spectrum_test(test_freqs, test_amps, scale=12, chunk=4096, samplerate=44100):
     num_columns = 16
     
     x = np.arange(chunk)
@@ -34,7 +35,7 @@ def spectrum_test(test_freqs, test_amps, chunk=4096, samplerate=44100):
     #Cast to int16 - the data format returned by the microphone
     y = y.astype('i2')   
 
-    spectrum = get_spectrum(y, find_bin_mapping_np(num_columns), chunk)
+    bin_powers = spectrum.get_spectrum(y, spectrum.find_bin_mapping_np(num_columns), chunk, scale)
 
     plt.bar(np.arange(num_columns), spectrum, 1, align='edge')
     plt.show()
