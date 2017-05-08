@@ -13,7 +13,7 @@ from led import Matrix16x8
 if __name__ == '__main__':
    parser = argparse.ArgumentParser(description='Read samples from a .wav file and display Audio spectrum on LEDs')
    parser.add_argument('--wavfile', type=argparse.FileType('rb'))
-   parser.add_argument('--scale', type=int, default=4)
+   parser.add_argument('--scale', type=int, default=8)
    parser.add_argument('--use_mic', action='store_true')
    parser.add_argument('--show_hi', action='store_true')
    parser.add_argument('--max_freq', type=int, default=20000)
@@ -75,19 +75,12 @@ if __name__ == '__main__':
       data = read_data_func(input, chunk)
       # At the end of a .wav file, data will be '', so break out of the processing loop
       if (len(data) == 0): break
-      # Before processing samples in FFT, write raw data to speakers
-      # output.write(data)
-      # Replace the %d in the format string with length of data chunk.
-      #  Will not error if fewer than chunk samples are read at end of file
-      #data = unpack("%dh"%(len(data)/2),data)
-      #data = np.array(data, dtype='h')
 
       # Optional scale factor is applied to output of FFT
-      #  4 is default for full scale 16-bit audio, increase if volume is low
+      #  8 is default for full scale 16-bit audio, increase if volume is low
       bin_powers = spectrum.get_spectrum(data, bin_mapping, chunk, args.scale)
       #print(bin_powers)
       np.clip(bin_powers,0,8,bin_powers)
-      # Average the bin_powers over time so the LEDs change more slowly
       
       for col in range(0,num_columns):
          display.set_column(col, bin_powers[col])
