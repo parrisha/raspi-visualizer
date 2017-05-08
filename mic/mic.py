@@ -28,3 +28,12 @@ def read_mic(chunk, input):
          time.sleep(0.0001)
 
    return data[0:chunk]
+
+#Moved from main.py, still need to fully test
+def read_wavfile(chunk, input, output):
+      # Before processing samples in FFT, write raw data to speakers
+      output.write(data)
+      # Replace the %d in the format string with length of data chunk.
+      #  Will not error if fewer than chunk samples are read at end of file
+      data = unpack("%dh"%(len(data)/2),data)
+      data = np.array(data, dtype='h')
