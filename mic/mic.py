@@ -19,6 +19,8 @@ def read_mic(chunk, input):
 
    while amount_read <= chunk:
       l, temp = input.read()
+      #The stream was setup in NONBLOCKING mode, so if not data is ready yet the read will return 0
+      # Don't attempt to unpack zero-length data, instead sleep briefly to wait for more data
       if l > 0:
          temp = unpack("%dh"%(len(temp)/2),temp)
          temp = np.array(temp, dtype='h')
@@ -27,6 +29,9 @@ def read_mic(chunk, input):
       else:
          time.sleep(0.0001)
 
+   #We may have read more than "chunk" amount of data, truncate the return array to only the samples that will be processed
+   # If too much data was read, this will drop samples, but a perfect recreation of the input stream is not required to display
+   # the audio spectrum.
    return data[0:chunk]
 
 #Moved from main.py, still need to fully test
